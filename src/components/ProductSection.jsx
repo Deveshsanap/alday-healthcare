@@ -1,0 +1,195 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { ShoppingCart, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { products } from '../data'; 
+import { useCart } from '../context/CartContext'; 
+
+const ProductSection = () => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  
+  // --- STATE & REFS ---
+  const scrollRef = useRef(null);
+  
+  // 1. USING REF FOR PAUSE STATE (Crucial for extreme smoothness, avoids re-renders)
+  const isPaused = useRef(false); 
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // --- CONTINUOUS INFINITE SCROLL LOGIC ---
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    
+    const scrollContainer = scrollRef.current;
+    let animationId;
+    
+    const scroll = () => {
+      if (scrollContainer && !isPaused.current) {
+        // Because we duplicated the product array (mapped twice below), 
+        // scrollWidth is exactly double the original content width.
+        // Once we scroll past the first half, instantly reset to 0 to create an infinite loop.
+        const halfWidth = scrollContainer.scrollWidth / 2;
+        
+        if (scrollContainer.scrollLeft >= halfWidth) {
+          scrollContainer.scrollLeft = 0; 
+        } else {
+          // Adjust scroll speed here (1 = normal, 0.5 = slower, 2 = faster)
+          scrollContainer.scrollLeft += 1; 
+        }
+
+        // Sync the custom progress bar
+        let progress = (scrollContainer.scrollLeft / halfWidth) * 100;
+        if (progress > 100) progress = 100;
+        setScrollProgress(progress);
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+    
+    animationId = requestAnimationFrame(scroll);
+    
+    // Cleanup on unmount
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  // --- ADD TO CART HANDLER ---
+  const handleAddToCart = (e, product) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+    addToCart(product);
+  };
+
+  return (
+    <div className="bg-white py-20 relative overflow-hidden select-none">
+      
+      {/* Hide native scrollbar */}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* --- HEADER --- */}
+      <div className="max-w-[1400px] mx-auto px-6 mb-12">
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-[0.2em] text-gray-900">
+            Just Arrived
+          </h2>
+          <div className="w-20 h-1 bg-black mx-auto mt-4 mb-6"></div>
+        </div>
+      </div>
+
+      {/* --- SCROLLABLE PRODUCTS CONTAINER --- */}
+      {/* The padding left is applied to a wrapper so it doesn't mess with the mathematical loop width */}
+      <div className="pl-6">
+        <div 
+          ref={scrollRef}
+          onMouseEnter={() => isPaused.current = true}
+          onMouseLeave={() => isPaused.current = false}
+          onTouchStart={() => isPaused.current = true}
+          onTouchEnd={() => isPaused.current = false}
+          className="flex overflow-x-auto hide-scrollbar gap-4 md:gap-6 pb-4"
+          style={{ scrollBehavior: 'auto', pointerEvents: 'auto' }}
+        >
+          {/* IMPORTANT: Render the list twice in the SAME container to create the infinite seamless loop */}
+          {products.map((product, idx) => (
+            <ProductCard 
+              key={`a-${product.id}-${idx}`} 
+              product={product} 
+              navigate={navigate} 
+              handleAddToCart={handleAddToCart} 
+            />
+          ))}
+          {products.map((product, idx) => (
+            <ProductCard 
+              key={`b-${product.id}-${idx}`} 
+              product={product} 
+              navigate={navigate} 
+              handleAddToCart={handleAddToCart} 
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* --- CUSTOM PROGRESS / SCROLLBAR --- */}
+      <div className="max-w-[1400px] mx-auto px-6 mt-6 md:mt-10">
+        <div className="w-full h-[3px] bg-gray-200 relative overflow-hidden rounded-full">
+          <div 
+            className="absolute top-0 left-0 h-full bg-black rounded-full"
+            style={{ 
+              width: '20%', 
+              transform: `translateX(${scrollProgress * 4}%)` 
+            }}
+          ></div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+// --- EXTRACTED PRODUCT CARD ---
+const ProductCard = ({ product, navigate, handleAddToCart }) => {
+  return (
+    <div className="w-[calc(50vw-1.5rem)] md:w-[300px] lg:w-[320px] flex-shrink-0 bg-white rounded-sm shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col group/card">
+      {/* Image Link */}
+      <Link to={`/product/${product.id}`} className="relative w-full aspect-[4/5] bg-[#f9f9f9] overflow-hidden block">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover/card:scale-110 mix-blend-multiply pointer-events-none"
+        />
+        
+        {product.sale && (
+          <span className="absolute top-2 md:top-4 left-2 md:left-4 bg-red-600 text-white text-[9px] md:text-[10px] font-black px-2 md:px-3 py-1 uppercase tracking-tighter z-10">
+            Sale
+          </span>
+        )}
+
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 md:gap-4">
+           <button 
+              onClick={(e) => { e.preventDefault(); navigate(`/product/${product.id}`); }} 
+              className="bg-white p-2.5 md:p-3 rounded-full shadow-lg hover:bg-black hover:text-white transition-colors transform translate-y-4 group-hover/card:translate-y-0 duration-300"
+           >
+              <Eye size={16} className="md:w-[18px] md:h-[18px]" />
+           </button>
+           <button 
+              onClick={(e) => handleAddToCart(e, product)} 
+              className="bg-white p-2.5 md:p-3 rounded-full shadow-lg hover:bg-black hover:text-white transition-colors transform translate-y-4 group-hover/card:translate-y-0 duration-500"
+           >
+              <ShoppingCart size={16} className="md:w-[18px] md:h-[18px]" />
+           </button>
+        </div>
+      </Link>
+
+      {/* Details */}
+      <div className="p-4 md:p-6 flex-1 flex flex-col text-center">
+        <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1.5 md:mb-2">
+          {product.vendor || "ALDAY"}
+        </p>
+        <Link to={`/product/${product.id}`}>
+          <h3 className="text-xs md:text-sm font-bold text-gray-900 leading-snug mb-1.5 md:mb-2 hover:text-[#C5A059] transition-colors line-clamp-2 min-h-[34px] md:min-h-[40px]">
+            {product.name}
+          </h3>
+        </Link>
+        <p className="text-[9px] md:text-[11px] text-gray-500 uppercase tracking-widest mb-3 md:mb-4 line-clamp-1">
+          {product.concern}
+        </p>
+        <div className="mt-auto pt-3 md:pt-4 border-t border-gray-50">
+          <div className="flex justify-center items-center gap-2 md:gap-3">
+            {product.price < product.mrp && (
+              <span className="text-[10px] md:text-xs text-gray-400 line-through font-light">₹{product.mrp}</span>
+            )}
+            <span className="text-sm md:text-base font-black text-gray-900">₹{product.price}</span>
+          </div>
+        </div>
+        
+        <button 
+           onClick={(e) => handleAddToCart(e, product)} 
+           className="w-full mt-4 md:mt-6 bg-black text-white py-2.5 md:py-3 text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#C5A059] transition-all rounded-sm"
+        >
+          Add To Bag
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductSection;

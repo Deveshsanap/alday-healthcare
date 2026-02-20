@@ -1,0 +1,90 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// --- CONTEXT PROVIDERS ---
+import { AuthProvider } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { CartProvider } from './context/CartContext';
+
+// --- GLOBAL UI COMPONENTS ---
+import ScrollToTop from './components/ScrollToTop';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import CartDrawer from './components/CartDrawer';
+import BackToTop from './components/BackToTopButton';
+
+// --- LAZY LOADED PAGES (Fixes Navigation Lag) ---
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ShopPage = lazy(() => import('./pages/ShopPage'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const DermaAnalyser = lazy(() => import('./pages/DermaAnalyser'));
+const FoundersCorner = lazy(() => import('./pages/FoundersCorner'));
+const OurStory = lazy(() => import('./pages/OurStory'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Account = lazy(() => import('./pages/Account'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Success = lazy(() => import('./pages/Success'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const HelpSupport = lazy(() => import('./pages/HelpSupport'));
+
+// Loading Screen Component
+const PageLoader = () => (
+  <div className="h-screen w-full flex items-center justify-center bg-white">
+    <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <WishlistProvider>
+          <CartProvider>
+            
+            <ScrollToTop />
+
+            <div className="App relative font-sans text-gray-900 bg-white flex flex-col min-h-screen">
+              
+              <Navbar />
+              <CartDrawer />
+
+              <main className="flex-1">
+                {/* Suspense handles the "Wait time" between pages smoothly */}
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/view-all" element={<ShopPage />} />
+                    <Route path="/product/:id" element={<ProductDetails />} />
+                    
+                    <Route path="/derma-analyser" element={<DermaAnalyser />} />
+                    <Route path="/founders-corner" element={<FoundersCorner />} />
+                    <Route path="/our-story" element={<OurStory />} />
+                    
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/order-success" element={<Success />} />
+                    <Route path="/track-order" element={<TrackOrder />} />
+                    <Route path="/help-support" element={<HelpSupport />} />
+                  </Routes>
+                </Suspense>
+              </main>
+
+              <Footer />
+              <BackToTop />
+              
+            </div>
+
+          </CartProvider>
+        </WishlistProvider>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;
