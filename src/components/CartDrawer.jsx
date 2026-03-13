@@ -4,7 +4,6 @@ import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 
 const CartDrawer = () => {
-  // Using cartItems based on your context structure
   const { cartItems, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, getCartTotal } = useCart();
   const navigate = useNavigate();
 
@@ -80,22 +79,26 @@ const CartDrawer = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex gap-4 group">
+              {cartItems.map((item, index) => {
+                // BULLETPROOF ID: Finds the correct ID no matter how the backend formats it
+                const itemId = item?.productId?._id || item?.productId?.id || item?.productId || item?._id || item?.id;
+
+                return (
+                <div key={`${itemId}-${index}`} className="flex gap-4 group">
                   {/* Product Image */}
                   <div className="w-20 h-24 bg-[#F9F9F9] flex-shrink-0 overflow-hidden rounded-sm border border-gray-100">
-                     <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
+                     <img src={item.image || item.productId?.image} alt={item.name || item.productId?.name} className="w-full h-full object-cover mix-blend-multiply" />
                   </div>
                   
                   {/* Product Details */}
                   <div className="flex-1 flex flex-col py-1">
                     <div className="flex justify-between items-start gap-2">
                       <div>
-                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.category || "ALDAY"}</p>
-                         <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-2">{item.name}</h3>
+                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.category || item.productId?.category || "ALDAY"}</p>
+                         <h3 className="font-bold text-sm text-gray-900 leading-snug line-clamp-2">{item.name || item.productId?.name}</h3>
                       </div>
                       <button 
-                        onClick={() => removeFromCart(item.id)} 
+                        onClick={() => removeFromCart(itemId)} 
                         className="text-gray-400 hover:text-red-500 transition-colors mt-1"
                       >
                         <Trash2 size={16} />
@@ -106,7 +109,7 @@ const CartDrawer = () => {
                        {/* Quantity Controls */}
                        <div className="flex items-center border border-gray-200 rounded-sm">
                           <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+                            onClick={() => updateQuantity(itemId, -1)} 
                             className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-black transition-colors disabled:opacity-50" 
                             disabled={item.quantity <= 1}
                           >
@@ -114,18 +117,20 @@ const CartDrawer = () => {
                           </button>
                           <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
                           <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                            onClick={() => updateQuantity(itemId, 1)} 
                             className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-black transition-colors"
                           >
                             <Plus size={12} strokeWidth={3} />
                           </button>
                        </div>
                        {/* Price */}
-                       <p className="font-black text-sm text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</p>
+                       <p className="font-black text-sm text-gray-900">
+                         ₹{((item.price || item.productId?.price || 0) * item.quantity).toLocaleString()}
+                       </p>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

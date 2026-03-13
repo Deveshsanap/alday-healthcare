@@ -10,10 +10,16 @@ export const CartProvider = ({ children }) => {
 
   const API_BASE_URL = 'https://aldey-backend.vercel.app/api/cart';
 
-  // Helper to get the auth token
   const getToken = () => localStorage.getItem('alday_auth_token');
 
-  // Load Cart from Backend (if logged in) OR Local Storage (if guest)
+  // --- BULLETPROOF ID HELPER ---
+  const getTrueId = (item) => {
+    if (!item) return null;
+    if (typeof item.productId === 'object') return item.productId._id || item.productId.id;
+    return item.productId || item._id || item.id;
+  };
+
+  // Load Cart from Backend OR Local Storage
   useEffect(() => {
     const fetchCart = async () => {
       const token = getToken();
@@ -24,12 +30,29 @@ export const CartProvider = ({ children }) => {
           });
           if (res.ok) {
             const data = await res.json();
-            // Assuming backend returns { data: { items: [...] } } or similar
-            // Adjust this path if your backend nests the items differently!
-            const fetchedItems = data.items || data.data?.items || data.cart?.items; 
-            if (fetchedItems && fetchedItems.length > 0) {
-              setCartItems(fetchedItems);
-              return; // Exit if we successfully loaded from the backend
+            const fetchedItems = data.items || data.data?.items || data.cart?.items || data.data || []; 
+            
+            const normalizedCart = fetchedItems.map(item => {
+              const productObj = typeof item.productId === 'object' ? item.productId : 
+                                 typeof item.product === 'object' ? item.product : null;
+              
+              if (productObj) {
+                return {
+                  ...productObj,
+                  _id: productObj._id || productObj.id,
+                  quantity: Number(item.quantity) || 1
+                };
+              }
+              return {
+                ...item,
+                _id: getTrueId(item),
+                quantity: Number(item.quantity) || 1
+              };
+            });
+
+            if (normalizedCart.length > 0) {
+              setCartItems(normalizedCart);
+              return; 
             }
           }
         } catch (error) {
@@ -37,7 +60,6 @@ export const CartProvider = ({ children }) => {
         }
       }
       
-      // Fallback to local storage
       const savedCart = localStorage.getItem('alday_cart');
       if (savedCart) setCartItems(JSON.parse(savedCart));
     };
@@ -45,24 +67,25 @@ export const CartProvider = ({ children }) => {
     fetchCart();
   }, []);
 
-  // Save to Local Storage as a backup whenever cart changes
+  // Save to Local Storage as backup
   useEffect(() => {
     localStorage.setItem('alday_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = async (product, quantity = 1) => {
-    const productId = product._id || product.id; // Handle MongoDB IDs
+    const pId = getTrueId(product);
 
-    // 1. Optimistic UI Update (Instant feedback)
+    // 1. Optimistic UI Update
     setCartItems(prev => {
-      const existing = prev.find(item => (item._id || item.id) === productId);
+      const existing = prev.find(item => getTrueId(item) === pId);
       if (existing) {
         return prev.map(item => 
-          (item._id || item.id) === productId ? { ...item, quantity: item.quantity + quantity } : item
+          getTrueId(item) === pId ? { ...item, quantity: Number(item.quantity) + Number(quantity) } : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, { ...product, _id: pId, quantity: Number(quantity) }];
     });
+    
     setIsCartOpen(true);
 
     // 2. Server Sync
@@ -75,7 +98,7 @@ export const CartProvider = ({ children }) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` 
           },
-          body: JSON.stringify({ productId, quantity })
+          body: JSON.stringify({ productId: pId, quantity: Number(quantity) })
         });
       } catch (error) {
         console.error("Failed to sync add to cart with server", error);
@@ -84,10 +107,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (id) => {
-    // 1. Optimistic UI Update
-    setCartItems(prev => prev.filter(item => (item._id || item.id) !== id));
+    setCartItems(prev => prev.filter(item => getTrueId(item) !== id));
 
-    // 2. Server Sync
     const token = getToken();
     if (token) {
       try {
@@ -95,18 +116,19 @@ export const CartProvider = ({ children }) => {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-      } catch (error) {
-        console.error("Failed to sync remove from cart with server", error);
-      }
+      } catch (error) {}
     }
   };
 
   const updateQuantity = async (id, delta) => {
-    // 1. Optimistic UI Update
     let newQuantity = 1;
+    
+    // 1. Optimistic UI Update
     setCartItems(prev => prev.map(item => {
-      if ((item._id || item.id) === id) {
-        newQuantity = Math.max(1, item.quantity + delta);
+      const currentId = getTrueId(item);
+      
+      if (String(currentId) === String(id)) {
+        newQuantity = Math.max(1, Number(item.quantity) + Number(delta));
         return { ...item, quantity: newQuantity };
       }
       return item;
@@ -122,12 +144,10 @@ export const CartProvider = ({ children }) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` 
           },
-          // Some backends expect 'quantity' to be the delta, others expect the absolute new quantity. 
-          // Adjust this if your backend expects `{ productId, delta }` instead!
           body: JSON.stringify({ productId: id, quantity: newQuantity }) 
         });
       } catch (error) {
-        console.error("Failed to sync update quantity with server", error);
+        console.error("Failed to sync quantity", error);
       }
     }
   };
@@ -141,19 +161,13 @@ export const CartProvider = ({ children }) => {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-      } catch (error) {
-        console.error("Failed to clear cart on server", error);
-      }
+      } catch (error) {}
     }
   };
 
-  const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const getCartCount = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
-  };
+  // Safe Math Calculations
+  const getCartTotal = () => cartItems.reduce((total, item) => total + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+  const getCartCount = () => cartItems.reduce((count, item) => count + Number(item.quantity || 1), 0);
 
   return (
     <CartContext.Provider value={{ 

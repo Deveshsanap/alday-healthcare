@@ -33,8 +33,7 @@ const ShopPage = () => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://aldey-backend.vercel.app/api/product');
-        if (!response.ok) throw new Error('Failed to fetch products');
+const response = await fetch('https://aldey-backend.vercel.app/api/product?limit=1000');        if (!response.ok) throw new Error('Failed to fetch products');
         
         const data = await response.json();
         
@@ -71,28 +70,38 @@ const ShopPage = () => {
     }
   }, [location.search]);
 
-// --- EXTREME PERFORMANCE FILTERING ENGINE ---
+// --- EXTREME PERFORMANCE & FUZZY FILTERING ENGINE ---
   const filteredData = useMemo(() => {
     if (!Array.isArray(products)) return [];
     let result = [...products];
 
-    // Search Filter (BULLETPROOF STRING CONVERSION)
     if (searchQuery) {
-      const query = String(searchQuery).toLowerCase();
+      const query = String(searchQuery).toLowerCase().trim();
+      const cleanQuery = query.replace(/[^a-z0-9]/g, ''); // Strips all spaces and symbols
+      const singularQuery = cleanQuery.endsWith('s') ? cleanQuery.slice(0, -1) : cleanQuery; // Handles plurals
+
       result = result.filter(p => {
-        const inName = String(p?.name || "").toLowerCase().includes(query);
-        const inConcern = String(p?.concern || "").toLowerCase().includes(query);
-        const inCategory = String(p?.category || "").toLowerCase().includes(query);
-        return inName || inConcern || inCategory;
+        const combinedText = String(`${p?.name} ${p?.category} ${p?.concern} ${p?.description}`).toLowerCase();
+        const cleanCombined = combinedText.replace(/[^a-z0-9]/g, '');
+        
+        return combinedText.includes(query) || 
+               cleanCombined.includes(cleanQuery) || 
+               cleanCombined.includes(singularQuery);
       });
     }
 
-    // Category Filter (BULLETPROOF STRING CONVERSION)
     if (category !== "All" && !searchQuery) {
-      const lowerCat = String(category).toLowerCase();
+      const cat = String(category).toLowerCase().trim();
+      const cleanCat = cat.replace(/[^a-z0-9]/g, '');
+      const singularCat = cleanCat.endsWith('s') ? cleanCat.slice(0, -1) : cleanCat;
+
       result = result.filter(p => {
-        const searchableText = String(`${p?.category || ""} ${p?.concern || ""}`).toLowerCase();
-        return searchableText.includes(lowerCat);
+        const combinedText = String(`${p?.category} ${p?.concern} ${p?.name}`).toLowerCase();
+        const cleanCombined = combinedText.replace(/[^a-z0-9]/g, '');
+
+        return combinedText.includes(cat) || 
+               cleanCombined.includes(cleanCat) || 
+               cleanCombined.includes(singularCat);
       });
     }
 
