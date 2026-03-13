@@ -17,7 +17,7 @@ import BackToTop from './components/BackToTopButton';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import ProductDetails from './pages/ProductDetails';
-import { AnimatePresence, MotionConfig } from 'framer-motion';
+// import { AnimatePresence, MotionConfig } from 'framer-motion';
 
 // --- LAZY LOADED PAGES (Only for secondary pages) ---
 const DermaAnalyser = lazy(() => import('./pages/DermaAnalyser'));
