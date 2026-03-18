@@ -6,10 +6,10 @@ const Footer = () => {
   return (
     <footer className="bg-black text-white pt-20 pb-10 border-t border-gray-900">
       <div className="max-w-[1400px] mx-auto px-6">
-        
+
         {/* Top Section: Brand & Newsletter */}
         <div className="flex flex-col lg:flex-row justify-between gap-12 mb-20">
-          
+
           {/* Brand Info */}
           <div className="lg:w-1/3">
             <Link to="/" className="text-3xl font-bold tracking-widest block mb-6 uppercase">
@@ -17,7 +17,7 @@ const Footer = () => {
               <span className="text-[#C5A059] ml-1">.</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-sm">
-              100% Natural, Clinical Nutrition for your Hair & Skin. 
+              100% Natural, Clinical Nutrition for your Hair & Skin.
               Formulated with Zero Dilution technology for maximum efficacy.
             </p>
             <div className="flex gap-4">
@@ -33,9 +33,9 @@ const Footer = () => {
             <h4 className="text-sm font-bold uppercase tracking-[0.2em] mb-6 text-[#C5A059]">Join The Club</h4>
             <p className="text-gray-400 text-xs mb-6 uppercase tracking-widest">Subscribe for clinical updates and exclusive access.</p>
             <form className="flex border-b border-gray-700 pb-2 group focus-within:border-[#C5A059] transition-colors" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="EMAIL ADDRESS" 
+              <input
+                type="email"
+                placeholder="EMAIL ADDRESS"
                 className="bg-transparent border-none outline-none text-white w-full placeholder-gray-600 text-xs font-bold tracking-widest"
               />
               <button className="text-white hover:text-[#C5A059] transition-colors">
@@ -47,7 +47,7 @@ const Footer = () => {
 
         {/* Middle Section: Links */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 border-t border-gray-900 pt-16 mb-16">
-          
+
           <div>
             <h5 className="font-bold text-xs uppercase tracking-[0.2em] mb-8 text-white">Shop</h5>
             <ul className="space-y-4 text-xs font-bold tracking-widest text-gray-400 uppercase">
@@ -81,9 +81,9 @@ const Footer = () => {
           <div>
             <h5 className="font-bold text-xs uppercase tracking-[0.2em] mb-8 text-white">Legal</h5>
             <ul className="space-y-4 text-xs font-bold tracking-widest text-gray-400 uppercase">
-              <li><Link to="/privacy" className="hover:text-[#C5A059] transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-[#C5A059] transition-colors">Terms of Service</Link></li>
-              <li><Link to="/refund" className="hover:text-[#C5A059] transition-colors">Refund Policy</Link></li>
+              <li><Link to="/policies#privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/policies#terms" className="hover:text-white transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/policies#refund" className="hover:text-white transition-colors">Cancellation & Refund</Link></li>
             </ul>
           </div>
         </div>
@@ -92,11 +92,11 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center text-[10px] font-bold tracking-[0.2em] text-gray-600 pt-8 border-t border-gray-900 uppercase">
           <p>&copy; 2026 Alday Health. Pure Clinical Nutrition.</p>
           <div className="flex items-center gap-6 mt-6 md:mt-0">
-             <span className="flex items-center gap-2 hover:text-white transition-colors cursor-default">
-               <CreditCard size={14}/> Secure SSL Payments
-             </span>
-             <Link to="/account" className="hover:text-[#C5A059] transition-colors">My Account</Link>
-             <Link to="/wishlist" className="hover:text-[#C5A059] transition-colors">Wishlist</Link>
+            <span className="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+              <CreditCard size={14} /> Secure SSL Payments
+            </span>
+            <Link to="/account" className="hover:text-[#C5A059] transition-colors">My Account</Link>
+            <Link to="/wishlist" className="hover:text-[#C5A059] transition-colors">Wishlist</Link>
           </div>
         </div>
 
@@ -106,10 +106,10 @@ const Footer = () => {
 };
 
 const SocialIcon = ({ icon, link }) => (
-  <a 
-    href={link} 
-    target="_blank" 
-    rel="noopener noreferrer" 
+  <a
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
     className="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-[#C5A059] hover:border-[#C5A059] hover:text-black transition-all duration-300"
   >
     {icon}

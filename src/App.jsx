@@ -26,6 +26,7 @@ import ProductList from './admin/products/ProductList';
 import AdminLogin from './admin/AdminLogin';
 import OrderList from './admin/orders/OrderList';
 import BestsellerList from './admin/bestsellers/BestsellerList';
+import PoliciesPage from './pages/policies/PoliciesPage';
 
 // --- LAZY LOADED PAGES (Only for secondary pages) ---
 const DermaAnalyser = lazy(() => import('./pages/DermaAnalyser'));
@@ -98,34 +99,36 @@ function App() {
       <AuthProvider>
         <WishlistProvider>
           <CartProvider>
-            
+
             <ScrollToTop />
-            
+
             <Routes>
               {/* PUBLIC ROUTES (Uses PublicLayout) */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/view-all" element={<ShopPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
-                
+
                 <Route path="/derma-analyser" element={<DermaAnalyser />} />
                 <Route path="/founders-corner" element={<FoundersCorner />} />
                 <Route path="/our-story" element={<OurStory />} />
-                
+
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/wishlist" element={<Wishlist />} />
-                
+
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-success" element={<Success />} />
                 <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/help-support" element={<HelpSupport />} />
+
+                <Route path="/policies" element={<PoliciesPage />} />
               </Route>
 
               {/* ADMIN ROUTES (No Navbar/Footer) */}
               <Route path="/admin/login" element={<AdminLogin />} />
-              
+
               <Route path="/admin" element={
                 <ProtectedAdminRoute>
                   <AdminLayout />

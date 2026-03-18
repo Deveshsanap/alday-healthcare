@@ -1,199 +1,264 @@
 import React, { useState } from 'react';
 import { 
-  MessageCircle, Mail, Search, ChevronDown, ChevronUp, 
-  Send, Check, FileText, MapPin, Globe, Clock, Download, ExternalLink
+  Phone, Mail, MapPin, Send, CheckCircle2, AlertCircle, Loader2, 
+  Twitter, Instagram, Facebook, MessageCircle 
 } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 
 const HelpSupport = () => {
-  const [activeFaq, setActiveFaq] = useState(null);
-  const [faqTab, setFaqTab] = useState('general');
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  // Backend Integration States
+  const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  // Form State matching the design's specific fields
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
 
-  // --- FAQS DATA ---
-  const faqData = {
-    general: [
-      { q: "What does 'Clinical Nutrition' mean?", a: "It refers to formulations backed by clinical data that deliver specific nutrients in high concentrations to address root causes." },
-      { q: "Are the products 100% vegan?", a: "Yes, every single Alday Health product is 100% plant-based and cruelty-free." }
-    ],
-    shipping: [
-      { q: "How long does delivery take?", a: "Standard shipping takes 3-5 business days. Express shipping is available for select metro cities." },
-      { q: "Do you ship internationally?", a: "Currently, we only ship within India, but we are expanding to the UAE and UK soon." }
-    ],
-    rituals: [
-      { q: "Can I mix different serums?", a: "We recommend layering them. Apply water-based serums first, followed by oil-based formulations for maximum absorption." },
-      { q: "What is the best time to apply hair oil?", a: "For clinical efficacy, leave it on for at least 4 hours or overnight." }
-    ]
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    // Limit message to 500 characters
+    if (name === 'message' && value.length > 500) return;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  // --- BACKEND SUBMISSION ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => setFormSubmitted(false), 5000);
+    setStatus('loading');
+    setErrorMessage('');
+
+    try {
+      // Format payload to match your backend's expected structure based on previous context
+      const payload = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phone: formData.phone, // Added from the new design
+        subject: 'General Inquiry', // Fallback subject for the backend
+        message: formData.message
+      };
+
+      const response = await fetch('https://aldey-backend.vercel.app/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' });
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setStatus('error');
+        setErrorMessage(data.message || 'Failed to send message. Please try again.');
+        setTimeout(() => setStatus('idle'), 6000);
+      }
+    } catch (error) {
+      console.error("Contact form error:", error);
+      setStatus('error');
+      setErrorMessage('Server connection error. Please try again later.');
+      setTimeout(() => setStatus('idle'), 6000);
+    }
   };
 
   return (
-    <div className="bg-[#FBFBFB] min-h-screen font-sans text-gray-900">
+    <div className="bg-[#FBFBFB] min-h-screen font-sans text-gray-900 pb-20 pt-20">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        
+        {/* Main Grid Layout matching the provided design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
+          
+          {/* --- LEFT COLUMN: Contact Info --- */}
+          <div className="flex flex-col justify-center">
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-[#12221A] mb-4">
+              Let's connect
+            </h1>
+            <p className="text-gray-500 mb-12 text-sm md:text-base max-w-md">
+              We're here to help you with any questions, clinical inquiries, or support needs you might have. Reach out to us through any of the channels below.
+            </p>
 
-      <main className="mt-16">
-        {/* --- DYNAMIC HERO --- */}
-        <section className="bg-gradient-to-b from-[#12221A] to-[#1A2E24] text-white py-24 px-6 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-             <div className="absolute -top-20 -right-20 w-96 h-96 bg-white rounded-full blur-[100px]"></div>
+            <div className="space-y-8 mb-12">
+              {/* Phone Block */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#12221A]/5 rounded-full flex items-center justify-center shrink-0">
+                  <Phone size={20} className="text-[#C5A059]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#12221A] mb-1">Call us</h3>
+                  <a href="tel:+918000000000" className="text-gray-600 hover:text-[#C5A059] transition-colors block text-sm">
+                    +91 80000 00000
+                  </a>
+                  <span className="text-xs text-gray-400">Mon-Sat, 9am to 6pm</span>
+                </div>
+              </div>
+
+              {/* Email Block */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#12221A]/5 rounded-full flex items-center justify-center shrink-0">
+                  <Mail size={20} className="text-[#C5A059]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#12221A] mb-1">Chat with us</h3>
+                  <a href="mailto:info@alday.com" className="text-gray-600 hover:text-[#C5A059] transition-colors block text-sm">
+                    info@alday.com
+                  </a>
+                  <a href="mailto:support@alday.com" className="text-gray-600 hover:text-[#C5A059] transition-colors block text-sm">
+                    support@alday.com
+                  </a>
+                </div>
+              </div>
+
+              {/* Address Block */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#12221A]/5 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin size={20} className="text-[#C5A059]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#12221A] mb-1">Visit us</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed max-w-[250px]">
+                    Alday Healthcare HQ,<br />
+                    123 Clinical Avenue, Bio-Tech Park,<br />
+                    Pune, Maharashtra, India
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Follow Section */}
+            <div>
+              <h4 className="font-bold text-[#12221A] mb-4 uppercase tracking-widest text-xs">Follow Us</h4>
+              <div className="flex gap-4">
+                <a href="#" className="w-10 h-10 bg-[#12221A] text-white rounded-full flex items-center justify-center hover:bg-[#C5A059] transition-colors">
+                  <Twitter size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#12221A] text-white rounded-full flex items-center justify-center hover:bg-[#C5A059] transition-colors">
+                  <Instagram size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#12221A] text-white rounded-full flex items-center justify-center hover:bg-[#C5A059] transition-colors">
+                  <MessageCircle size={18} /> {/* Represents Discord/Community */}
+                </a>
+                <a href="#" className="w-10 h-10 bg-[#12221A] text-white rounded-full flex items-center justify-center hover:bg-[#C5A059] transition-colors">
+                  <Facebook size={18} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* --- RIGHT COLUMN: The Form --- */}
+          <div className="bg-[#12221A] p-8 md:p-10 rounded-2xl shadow-2xl relative overflow-hidden flex flex-col justify-center">
+            
+            {/* Subtle background decoration to keep it premium */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A059] opacity-5 blur-[100px] pointer-events-none"></div>
+
+            <h2 className="text-2xl font-bold text-white mb-8">Send us a message</h2>
+
+            {status === 'success' ? (
+              <div className="text-center py-16 animate-in fade-in duration-500">
+                <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
+                  <CheckCircle2 size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Message Sent!</h3>
+                <p className="text-gray-400 text-sm">We've received your message and will get back to you shortly.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                
+                {status === 'error' && (
+                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg flex items-start gap-3">
+                    <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-red-200">{errorMessage}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">First Name</label>
+                    <input 
+                      type="text" 
+                      name="firstName" 
+                      required disabled={status === 'loading'}
+                      value={formData.firstName} onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] outline-none transition-all"
+                      placeholder="Jane"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">Last Name</label>
+                    <input 
+                      type="text" 
+                      name="lastName" 
+                      required disabled={status === 'loading'}
+                      value={formData.lastName} onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] outline-none transition-all"
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">Email</label>
+                    <input 
+                      type="email" 
+                      name="email" 
+                      required disabled={status === 'loading'}
+                      value={formData.email} onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] outline-none transition-all"
+                      placeholder="jane@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      name="phone" 
+                      disabled={status === 'loading'}
+                      value={formData.phone} onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] outline-none transition-all"
+                      placeholder="+91 00000 00000"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 relative">
+                  <div className="flex justify-between items-end">
+                    <label className="text-xs font-bold text-gray-300 uppercase tracking-widest">Message</label>
+                    <span className={`text-[10px] ${formData.message.length >= 490 ? 'text-red-400 font-bold' : 'text-gray-500'}`}>
+                      {formData.message.length}/500
+                    </span>
+                  </div>
+                  <textarea 
+                    name="message" 
+                    required rows="4" disabled={status === 'loading'}
+                    value={formData.message} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] outline-none transition-all resize-none"
+                    placeholder="Leave us a message..."
+                  ></textarea>
+                </div>
+
+                <button 
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full bg-[#C5A059] text-[#12221A] font-bold uppercase tracking-widest py-4 rounded-lg hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+                >
+                  {status === 'loading' ? (
+                    <><Loader2 size={18} className="animate-spin" /> Sending...</>
+                  ) : (
+                    <>Send Message <Send size={18} /></>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
           
-          <div className="max-w-3xl mx-auto relative z-10">
-            <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block">Support Center</span>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-8 leading-none">We're here to help.</h1>
-            <div className="relative max-w-xl mx-auto group">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" size={20} />
-              <input 
-                type="text" 
-                placeholder="Search products, orders, or concerns..." 
-                className="w-full bg-white text-black py-5 pl-14 pr-6 rounded-full outline-none text-sm font-medium shadow-2xl transition-all focus:ring-2 focus:ring-[#C5A059]"
-              />
-            </div>
-          </div>
-        </section>
-
-        <div className="max-w-[1300px] mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-            
-            {/* --- LEFT: FAQ & RESOURCES (8 cols) --- */}
-            <div className="lg:col-span-8 space-y-16">
-              
-              {/* FAQ Section */}
-              <div>
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 border-b border-gray-100 pb-6">
-                  <h2 className="text-2xl font-black uppercase tracking-widest">Common Questions</h2>
-                  <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
-                    {['general', 'shipping', 'rituals'].map(tab => (
-                      <button 
-                        key={tab}
-                        onClick={() => {setFaqTab(tab); setActiveFaq(null);}}
-                        className={`text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full border transition-all whitespace-nowrap ${faqTab === tab ? 'bg-black text-white border-black shadow-md' : 'border-gray-200 text-gray-400 hover:border-black hover:text-black'}`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {faqData[faqTab].map((faq, idx) => (
-                    <div key={idx} className="bg-white border border-gray-100 rounded-sm hover:border-gray-300 transition-colors">
-                      <button 
-                        onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                        className="w-full flex justify-between items-center p-6 text-left"
-                      >
-                        <span className="font-bold text-sm uppercase tracking-wide pr-8">{faq.q}</span>
-                        <div className={`transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
-                          <ChevronDown size={18} className="text-gray-400" />
-                        </div>
-                      </button>
-                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${activeFaq === idx ? 'max-h-96 border-t border-gray-50' : 'max-h-0'}`}>
-                        <p className="p-6 text-sm text-gray-500 leading-relaxed">
-                          {faq.a}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Resource Library */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div className="bg-white border border-gray-100 p-8 rounded-sm group hover:border-[#C5A059] transition-colors">
-                    <FileText size={32} className="text-[#C5A059] mb-4" />
-                    <h4 className="font-bold uppercase tracking-widest text-sm mb-2">Clinical Whitepaper</h4>
-                    <p className="text-xs text-gray-500 mb-6">Understand the science behind our zero-dilution formulations.</p>
-                    <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest hover:text-[#C5A059] transition-colors">
-                       <Download size={14}/> Download PDF
-                    </button>
-                 </div>
-                 <div className="bg-white border border-gray-100 p-8 rounded-sm group hover:border-[#C5A059] transition-colors">
-                    <Clock size={32} className="text-[#C5A059] mb-4" />
-                    <h4 className="font-bold uppercase tracking-widest text-sm mb-2">The Ritual Guide</h4>
-                    <p className="text-xs text-gray-500 mb-6">Step-by-step routines for hair growth and skin clarity.</p>
-                    <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest hover:text-[#C5A059] transition-colors">
-                       <Download size={14}/> Download PDF
-                    </button>
-                 </div>
-              </div>
-            </div>
-
-            {/* --- RIGHT: INTERACTIVE CONTACT (4 cols) --- */}
-            <div className="lg:col-span-4 space-y-8">
-              
-              {/* Status Card */}
-              <div className="bg-white border border-gray-100 p-8 rounded-sm shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                   <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Support is Online</span>
-                </div>
-                <h3 className="font-black uppercase tracking-widest text-lg mb-6">Get in touch</h3>
-                
-                <div className="space-y-6">
-                  <a href="https://wa.me/919876543210" className="flex items-center justify-between p-4 bg-gray-50 rounded-sm hover:bg-green-50 transition-colors group">
-                    <div className="flex items-center gap-4">
-                      <MessageCircle size={20} className="text-green-600" />
-                      <span className="text-xs font-bold uppercase tracking-widest">WhatsApp Support</span>
-                    </div>
-                    <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </a>
-                  <a href="mailto:care@aldayhealth.com" className="flex items-center justify-between p-4 bg-gray-50 rounded-sm hover:bg-blue-50 transition-colors group">
-                    <div className="flex items-center gap-4">
-                      <Mail size={20} className="text-blue-600" />
-                      <span className="text-xs font-bold uppercase tracking-widest">Email Response</span>
-                    </div>
-                    <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Inquiry Form */}
-              <div className="bg-[#12221A] text-white p-8 rounded-sm shadow-xl">
-                <h3 className="font-bold uppercase tracking-widest text-sm mb-6">Clinical Inquiry</h3>
-                {formSubmitted ? (
-                  <div className="text-center py-6 animate-fade-in">
-                    <div className="w-12 h-12 bg-white/10 text-[#C5A059] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Check size={24} />
-                    </div>
-                    <p className="text-xs font-bold uppercase tracking-widest">Inquiry Received</p>
-                    <p className="text-[10px] text-gray-400 mt-2">Expect a response within 12 hours.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <select className="w-full bg-white/5 border border-white/10 p-3 rounded-sm text-[10px] uppercase font-bold tracking-widest outline-none focus:border-[#C5A059] transition-colors appearance-none cursor-pointer">
-                       <option className="bg-[#12221A]">General Inquiry</option>
-                       <option className="bg-[#12221A]">Recent Order Issue</option>
-                       <option className="bg-[#12221A]">Product Feedback</option>
-                       <option className="bg-[#12221A]">Clinical Consultation</option>
-                    </select>
-                    <input type="text" placeholder="SUBJECT" className="w-full bg-white/5 border border-white/10 p-3 rounded-sm text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#C5A059] transition-colors" required />
-                    <textarea placeholder="DESCRIBE YOUR CONCERN..." rows="4" className="w-full bg-white/5 border border-white/10 p-3 rounded-sm text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#C5A059] transition-colors resize-none" required></textarea>
-                    <button type="submit" className="w-full bg-[#C5A059] text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
-                      Submit Case <Send size={14} />
-                    </button>
-                  </form>
-                )}
-              </div>
-
-              {/* Store Locator Mini */}
-              <div className="border border-dashed border-gray-300 p-6 rounded-sm">
-                 <div className="flex items-center gap-3 mb-4">
-                    <MapPin size={18} className="text-gray-400"/>
-                    <h5 className="text-[10px] font-bold uppercase tracking-widest">Physical Clinics</h5>
-                 </div>
-                 <p className="text-[10px] text-gray-500 mb-4 leading-relaxed uppercase">Visit our experience centers in Mumbai, Delhi & Bangalore.</p>
-                 <button className="text-[10px] font-bold uppercase tracking-widest text-[#C5A059] hover:text-black transition-colors underline underline-offset-4">Find Near Me</button>
-              </div>
-            </div>
-
-          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

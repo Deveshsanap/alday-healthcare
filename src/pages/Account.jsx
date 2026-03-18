@@ -288,7 +288,7 @@ const Account = () => {
       `}</style>
 
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-200 pt-32 pb-12 mt-16">
+      <div className="bg-white border-b border-gray-200 pt-12 pb-12 ">
         <div className="max-w-[1200px] mx-auto px-6 text-center">
           <h1 className="text-3xl md:text-5xl font-serif font-bold uppercase tracking-tight mb-3">My Account</h1>
           <p className="text-gray-500 font-light text-sm">Welcome back, <span className="font-bold text-black uppercase tracking-widest text-xs ml-1">{displayName.split(' ')[0]}</span></p>
