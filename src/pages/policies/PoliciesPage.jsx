@@ -31,13 +31,13 @@ const PoliciesPage = () => {
       <div className="space-y-6 text-gray-600 leading-relaxed print:text-black">
         <p>At Alday Healthcare, your privacy is our priority. This policy outlines how we collect, use, and protect your personal information.</p>
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">1. Information We Collect</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">1. Information We Collect</h3>
           <p>We collect information you provide directly, such as when you create an account, make a purchase, or contact support. This includes your name, email, shipping address, and secure payment tokens.</p>
           
-          <h3 className="text-lg font-bold text-gray-900">2. Medical Data & Privacy</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">2. Medical Data & Privacy</h3>
           <p>If you use our Derma Analyser, the images and results are processed securely and are never used for marketing purposes or sold to third parties without explicit consent.</p>
 
-          <h3 className="text-lg font-bold text-gray-900">3. Cookies & Tracking</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">3. Cookies & Tracking</h3>
           <p>We use essential cookies to maintain your cart and session. Analytics cookies are used strictly to improve website performance.</p>
         </div>
       </div>
@@ -46,15 +46,15 @@ const PoliciesPage = () => {
       <div className="space-y-6 text-gray-600 leading-relaxed print:text-black">
         <p>By accessing Alday Healthcare, you agree to be bound by these Terms and Conditions.</p>
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">1. Medical Disclaimer</h3>
-          <p className="bg-amber-50 border-l-4 border-amber-500 p-4 text-amber-900 rounded-r-lg">
+          <h3 className="text-lg font-bold text-[#12221A]">1. Medical Disclaimer</h3>
+          <p className="bg-[#C5A059]/10 border-l-4 border-[#C5A059] p-4 text-[#12221A] rounded-r-lg">
             The products and claims on this site are not evaluated by the FDA and are not intended to diagnose, treat, cure, or prevent any disease. Always consult a healthcare professional.
           </p>
           
-          <h3 className="text-lg font-bold text-gray-900">2. Account Responsibilities</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">2. Account Responsibilities</h3>
           <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>
 
-          <h3 className="text-lg font-bold text-gray-900">3. Pricing & Availability</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">3. Pricing & Availability</h3>
           <p>Prices are subject to change without notice. We reserve the right to limit quantities of products available for sale.</p>
         </div>
       </div>
@@ -63,13 +63,13 @@ const PoliciesPage = () => {
       <div className="space-y-6 text-gray-600 leading-relaxed print:text-black">
         <p>We want you to be completely satisfied with your Alday Healthcare purchase.</p>
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">1. Cancellation Policy</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">1. Cancellation Policy</h3>
           <p>Orders can only be cancelled before they are dispatched. Once an order receives a tracking number, it cannot be cancelled.</p>
           
-          <h3 className="text-lg font-bold text-gray-900">2. Returns on Health Products</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">2. Returns on Health Products</h3>
           <p>For hygiene and safety reasons, <strong>we do not accept returns on opened skincare or haircare products</strong> unless the product arrived damaged or defective.</p>
 
-          <h3 className="text-lg font-bold text-gray-900">3. Refund Processing</h3>
+          <h3 className="text-lg font-bold text-[#12221A]">3. Refund Processing</h3>
           <p>Approved refunds will be processed to your original payment method within 5-7 business days. Bank processing times may vary.</p>
         </div>
       </div>
@@ -82,7 +82,7 @@ const PoliciesPage = () => {
         
         {/* Page Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Legal & Policies</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#12221A] mb-4">Legal & Policies</h1>
           <p className="text-gray-500">Everything you need to know about how we operate and protect you.</p>
         </div>
 
@@ -98,7 +98,7 @@ const PoliciesPage = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all font-medium ${
                       activeTab === tab.id 
-                        ? 'bg-slate-900 text-white shadow-md' 
+                        ? 'bg-[#12221A] text-[#C5A059] shadow-md' 
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
@@ -110,9 +110,9 @@ const PoliciesPage = () => {
 
               {/* Support Card in Sidebar */}
               <div className="p-6 bg-slate-50 border-t border-gray-100 mt-2">
-                <h4 className="font-bold text-gray-900 mb-2">Need Help?</h4>
+                <h4 className="font-bold text-[#12221A] mb-2">Need Help?</h4>
                 <p className="text-sm text-gray-500 mb-4">Our support team is available Mon-Fri, 9am - 6pm.</p>
-                <a href="mailto:support@alday.com" className="flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                <a href="mailto:support@alday.com" className="flex items-center gap-2 text-sm font-semibold text-[#C5A059] hover:text-[#12221A] transition-colors">
                   <Mail size={16} /> Contact Support
                 </a>
               </div>
@@ -125,7 +125,7 @@ const PoliciesPage = () => {
             {/* Header Actions (Print & Date) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-6 mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-[#12221A]">
                   {tabs.find(t => t.id === activeTab)?.label}
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">Last Updated: March 15, 2026</p>
@@ -151,13 +151,13 @@ const PoliciesPage = () => {
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setFeedbackGiven(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-[#12221A] hover:text-[#12221A] transition-colors"
                     >
                       <ThumbsUp size={16} /> Yes
                     </button>
                     <button 
                       onClick={() => setFeedbackGiven(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-slate-900 hover:text-slate-900 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-[#12221A] hover:text-[#12221A] transition-colors"
                     >
                       <ThumbsDown size={16} /> No
                     </button>
