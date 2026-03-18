@@ -1,60 +1,95 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Eye, Heart, Star, RefreshCw } from 'lucide-react';
+import { ShoppingBag, Eye, Heart, Star, RefreshCw, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { products } from '../data'; 
 import { useCart } from '../context/CartContext'; 
 import { useWishlist } from '../context/WishlistContext';
 
 const DiscoverMore = () => {
-  const [randomProducts, setRandomProducts] = useState([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [addingState, setAddingState] = useState({}); // Tracks loading state per product
-  
   const navigate = useNavigate();
-  const { addToCart, setIsCartOpen } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  
+  // Contexts with safety fallbacks (Prevents crashing)
+  const cartContext = useCart() || {};
+  const wishlistContext = useWishlist() || {};
+  const { addToCart, setIsCartOpen } = cartContext;
+  const { toggleWishlist, isInWishlist } = wishlistContext;
 
-  // Initial Load
+  const [allProducts, setAllProducts] = useState([]);
+  const [randomProducts, setRandomProducts] = useState([]);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [addingState, setAddingState] = useState({}); 
+
+  // --- FETCH PRODUCTS FROM BACKEND (Copied from ShopPage logic) ---
   useEffect(() => {
-    shuffleProducts();
+    const fetchProducts = async () => {
+      setIsFetching(true);
+      try {
+        const response = await fetch('https://aldey-backend.vercel.app/api/product?limit=1000');
+        if (!response.ok) throw new Error('Failed to fetch products');
+        
+        const data = await response.json();
+        
+        // Safely extract the array based on your backend structure
+        const fetchedProducts = data.data || data.products || [];
+        const productsArray = Array.isArray(fetchedProducts) ? fetchedProducts : [];
+        
+        setAllProducts(productsArray);
+        
+        // Shuffle and set initial 4 products
+        if (productsArray.length > 0) {
+          const shuffled = [...productsArray].sort(() => 0.5 - Math.random());
+          setRandomProducts(shuffled.slice(0, 4));
+        }
+
+      } catch (error) {
+        console.error("Error loading products for Discover More:", error);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  // Premium Shuffle Function with fade animation
+  // --- PREMIUM SHUFFLE FUNCTION ---
   const shuffleProducts = () => {
+    if (allProducts.length === 0) return;
+    
     setIsRefreshing(true);
     setTimeout(() => {
-      const shuffled = [...products].sort(() => 0.5 - Math.random());
+      const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
       setRandomProducts(shuffled.slice(0, 4));
       setIsRefreshing(false);
-    }, 400); // 400ms delay to allow CSS fade-out to complete
+    }, 400); // Delay for smooth CSS fade
   };
 
-  // Premium Add to Cart with Micro-Interaction
+  // --- ADD TO CART HANDLER ---
   const handleAddToCart = (e, product) => {
     e.preventDefault(); 
     e.stopPropagation();
     
-    // Set this specific product's button to "loading"
-    setAddingState(prev => ({ ...prev, [product.id]: true }));
+    const productId = product._id || product.id;
+    setAddingState(prev => ({ ...prev, [productId]: true }));
     
-    // Artificial delay for a premium, processed feel
     setTimeout(() => {
-      addToCart(product);
-      setIsCartOpen(true);
-      setAddingState(prev => ({ ...prev, [product.id]: false }));
+      if (addToCart) addToCart(product);
+      if (setIsCartOpen) setIsCartOpen(true);
+      setAddingState(prev => ({ ...prev, [productId]: false }));
     }, 600); 
   };
 
+  // --- WISHLIST HANDLER ---
   const handleWishlistClick = (e, product) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(product);
+    if (toggleWishlist) toggleWishlist(product);
   };
 
-  if (randomProducts.length === 0) return null;
+  // Hide component entirely if no products are available and we are done fetching
+  if (!isFetching && randomProducts.length === 0) return null;
 
   return (
-    <section className="py-16 md:py-24 bg-[#FBFBFB] border-t border-gray-100 select-none overflow-hidden">
+    <section className="py-16 md:py-24 bg-[#FBFBFB] border-t border-gray-100 select-none overflow-hidden font-sans">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         
         {/* --- PREMIUM HEADER --- */}
@@ -62,133 +97,125 @@ const DiscoverMore = () => {
           <span className="text-[10px] md:text-xs font-bold text-[#C5A059] uppercase tracking-[0.3em] mb-3 block">
             Curated For You
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 tracking-tight flex items-center justify-center gap-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-[#12221A] flex items-center justify-center gap-4">
             Discover More
           </h2>
-          <div className="w-16 md:w-20 h-[2px] bg-[#C5A059] mt-6"></div>
+          <div className="w-16 md:w-20 h-1 bg-[#C5A059] mt-6"></div>
           
-          {/* Shuffle Button - Positioned absolutely on desktop, relatively on mobile */}
           <button 
             onClick={shuffleProducts}
-            disabled={isRefreshing}
-            className="mt-6 md:mt-0 md:absolute md:right-0 md:bottom-0 flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors disabled:opacity-50"
+            disabled={isRefreshing || isFetching}
+            className="mt-6 md:mt-0 md:absolute md:right-0 md:bottom-0 flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-[#12221A] transition-colors disabled:opacity-50"
           >
-            <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw size={14} className={`${isRefreshing ? 'animate-spin text-[#C5A059]' : ''}`} />
             Refresh
           </button>
         </div>
 
-        {/* --- RESPONSIVE GRID WITH FADE ANIMATION --- */}
-        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 transition-opacity duration-500 ease-in-out ${isRefreshing ? 'opacity-0 scale-[0.98]' : 'opacity-100 scale-100'}`}>
-          {randomProducts.map((product) => (
-            <div 
-              key={product.id} 
-              className="w-full bg-white flex flex-col group/card h-full rounded-sm border border-gray-100/50 hover:border-gray-200 hover:shadow-[0_15px_40px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-500"
-            >
+        {/* --- LOADING STATE --- */}
+        {isFetching ? (
+          <div className="flex flex-col items-center justify-center py-20 opacity-50">
+            <Loader2 size={40} className="animate-spin text-[#C5A059] mb-4" />
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Curating Collection...</span>
+          </div>
+        ) : (
+          <>
+            {/* --- RESPONSIVE GRID --- */}
+            <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 transition-all duration-500 ease-in-out ${isRefreshing ? 'opacity-0 scale-[0.98]' : 'opacity-100 scale-100'}`}>
               
-              {/* Image Container */}
-              <Link to={`/product/${product.id}`} className="relative w-full aspect-[4/5] bg-[#F8F9FA] overflow-hidden block rounded-t-sm flex-shrink-0">
+              {randomProducts.map((product) => {
+                const productId = product._id || product.id;
                 
-                {/* Sale Badge */}
-                {product.sale && (
-                  <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-red-600 text-white text-[7px] md:text-[9px] font-black uppercase tracking-widest px-2 md:px-2.5 py-1 z-20 shadow-sm">
-                    Sale
+                return (
+                  <div 
+                    key={productId} 
+                    className="flex flex-col group/card h-full bg-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)] rounded-sm transition-all duration-500 border border-transparent hover:border-gray-100 overflow-hidden"
+                  >
+                    
+                    {/* Image Area */}
+                    <div className="relative mb-5 bg-[#F4F4F4] aspect-[4/5] overflow-hidden">
+                      
+                      {/* Floating Actions */}
+                      <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 translate-x-10 opacity-0 group-hover/card:translate-x-0 group-hover/card:opacity-100 transition-all duration-400 ease-out">
+                         <button onClick={(e) => handleWishlistClick(e, product)} className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-[#12221A] hover:text-white transition-colors group/btn">
+                            <Heart size={16} fill={isInWishlist?.(productId) ? "#C5A059" : "none"} className={isInWishlist?.(productId) ? "text-[#C5A059] group-hover/btn:text-[#C5A059]" : ""} />
+                         </button>
+                         <button onClick={(e) => { e.preventDefault(); navigate(`/product/${productId}`); }} className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-[#12221A] hover:text-white transition-colors">
+                            <Eye size={16} />
+                         </button>
+                      </div>
+
+                      <Link to={`/product/${productId}`} className="block h-full">
+                        <img 
+                          src={product.image || product.imageUrl || "https://via.placeholder.com/300"} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover transition-transform duration-[2s] group-hover/card:scale-105 mix-blend-multiply p-4" 
+                          loading="lazy"
+                        />
+                      </Link>
+
+                      {/* Sale Badge */}
+                      {product.mrp && product.price < product.mrp && (
+                        <span className="absolute top-4 left-4 bg-[#12221A] text-[#C5A059] text-[8px] md:text-[9px] font-black px-3 py-1.5 uppercase tracking-[0.2em] shadow-lg">Sale</span>
+                      )}
+                    </div>
+
+                    {/* Details Area */}
+                    <div className="text-center flex flex-col flex-1 px-4 pb-6">
+                        <p className="text-[8px] md:text-[9px] font-bold text-[#C5A059] uppercase tracking-[0.3em] mb-2">
+                          {product.category || product.concern || "ALDAY"}
+                        </p>
+                        
+                        <Link to={`/product/${productId}`} className="block group-hover/card:text-[#C5A059] transition-colors mb-3">
+                            <h6 className="text-sm md:text-base font-bold text-gray-900 leading-snug line-clamp-2 min-h-[40px] tracking-tight">{product.name}</h6>
+                        </Link>
+                        
+                        {/* Stars */}
+                        <div className="flex items-center justify-center gap-0.5 mb-3">
+                           {[...Array(5)].map((_, i) => (
+                             <Star key={i} size={10} className="text-[#C5A059] fill-[#C5A059]" />
+                           ))}
+                           <span className="text-[9px] text-gray-400 ml-1.5 font-bold">
+                             ({product.reviews || Math.floor(Math.random() * 200) + 20})
+                           </span>
+                        </div>
+
+                        <div className="flex justify-center items-center gap-3 mb-6 mt-auto">
+                            {product.mrp && product.mrp > product.price && (
+                              <span className="text-gray-400 text-[10px] md:text-xs line-through font-light">₹{product.mrp}</span>
+                            )}
+                            <span className="text-base md:text-lg font-black text-[#12221A]">₹{product.price}</span>
+                        </div>
+                        
+                        <button 
+                           onClick={(e) => handleAddToCart(e, product)} 
+                           disabled={addingState[productId]}
+                           className="w-full bg-white border border-gray-200 text-[#12221A] py-3.5 md:py-4 uppercase text-[9px] md:text-[10px] font-bold tracking-[0.2em] group-hover/card:bg-[#12221A] group-hover/card:text-[#C5A059] group-hover/card:border-[#12221A] transition-all duration-300 rounded-sm flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                        >
+                          {addingState[productId] ? (
+                            <><RefreshCw size={14} className="animate-spin" /> Adding...</>
+                          ) : (
+                            <><ShoppingBag size={14} /> Add To Bag</>
+                          )}
+                        </button>
+                    </div>
                   </div>
-                )}
-
-                {/* Wishlist Heart */}
-                <button 
-                  onClick={(e) => handleWishlistClick(e, product)}
-                  className="absolute top-2 right-2 md:top-3 md:right-3 w-7 h-7 md:w-8 md:h-8 bg-white rounded-full flex items-center justify-center z-20 shadow-sm transition-transform hover:scale-110"
-                >
-                  <Heart size={14} className={`md:w-3.5 md:h-3.5 transition-colors ${isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-400 hover:text-black"}`} />
-                </button>
-
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-[1.5s] group-hover/card:scale-105 pointer-events-none mix-blend-multiply"
-                />
-
-                {/* Desktop Hover Action Buttons */}
-                <div className="hidden lg:flex absolute inset-0 bg-black/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 items-center justify-center gap-3 z-10">
-                   <button 
-                      onClick={(e) => { e.preventDefault(); navigate(`/product/${product.id}`); }} 
-                      className="bg-white p-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:bg-black hover:text-white transition-all transform translate-y-4 group-hover/card:translate-y-0 duration-300"
-                      title="Quick View"
-                   >
-                      <Eye size={16} />
-                   </button>
-                   <button 
-                      onClick={(e) => handleAddToCart(e, product)} 
-                      disabled={addingState[product.id]}
-                      className="bg-white p-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:bg-black hover:text-white transition-all transform translate-y-4 group-hover/card:translate-y-0 duration-500 disabled:opacity-75 disabled:hover:bg-white disabled:hover:text-black"
-                      title="Add to Cart"
-                   >
-                      {addingState[product.id] ? <RefreshCw size={16} className="animate-spin" /> : <ShoppingCart size={16} />}
-                   </button>
-                </div>
-              </Link>
-
-              {/* Details Container */}
-              <div className="p-4 md:p-5 flex-1 flex flex-col items-center text-center">
-                {/* Stars */}
-                <div className="flex items-center gap-0.5 md:gap-1 mb-2.5">
-                   {[...Array(5)].map((_, i) => (
-                     <Star key={i} size={10} className="text-[#FFC107] fill-[#FFC107] md:w-3 md:h-3" />
-                   ))}
-                   <span className="text-[9px] md:text-[10px] text-gray-400 ml-1.5">(128)</span>
-                </div>
-
-                {/* Vendor / Category */}
-                <p className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1.5">
-                  {product.category || "ALDAY"}
-                </p>
-
-                {/* Product Title */}
-                <Link to={`/product/${product.id}`}>
-                  <h3 className="text-xs md:text-sm font-bold text-gray-900 leading-snug mb-3 hover:text-[#C5A059] transition-colors line-clamp-2 md:line-clamp-1">
-                    {product.name}
-                  </h3>
-                </Link>
-
-                {/* Price */}
-                <div className="flex items-center justify-center gap-2 mb-4 md:mb-5">
-                  {product.price < product.mrp && (
-                    <span className="text-[10px] md:text-xs text-gray-400 line-through font-light">₹{product.mrp}</span>
-                  )}
-                  <span className="text-xs md:text-sm font-black text-gray-900">₹{product.price}</span>
-                </div>
-
-                {/* Interactive Add To Cart Button */}
-                <button 
-                   onClick={(e) => handleAddToCart(e, product)} 
-                   disabled={addingState[product.id]}
-                   className="w-full mt-auto bg-transparent border border-gray-200 text-gray-900 py-2.5 md:py-3 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black hover:text-white hover:border-black transition-all duration-300 rounded-sm disabled:opacity-75 disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {addingState[product.id] ? (
-                    <>
-                      <RefreshCw size={12} className="animate-spin" /> Adding...
-                    </>
-                  ) : (
-                    "Add To Cart"
-                  )}
-                </button>
-              </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
 
-        {/* View All Button */}
-        <div className="mt-12 md:mt-16 text-center">
-          <Link 
-            to="/view-all" 
-            className="inline-flex items-center gap-3 border border-gray-900 text-gray-900 px-8 md:px-10 py-3 md:py-3.5 rounded-sm text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-300 group"
-          >
-            Explore Full Collection
-            <span className="transform transition-transform duration-300 group-hover:translate-x-1">→</span>
-          </Link>
-        </div>
+            {/* --- VIEW ALL BUTTON --- */}
+            <div className="mt-12 md:mt-16 text-center">
+              <Link 
+                to="/view-all" 
+                className="inline-flex items-center gap-3 border border-[#12221A] text-[#12221A] px-8 md:px-10 py-3 md:py-4 rounded-none text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#12221A] hover:text-[#C5A059] transition-all duration-300 group shadow-lg"
+              >
+                Explore Full Collection
+                <span className="transform transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
+          </>
+        )}
 
       </div>
     </section>
