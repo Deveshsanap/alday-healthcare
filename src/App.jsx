@@ -19,13 +19,7 @@ import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import ProductDetails from './pages/ProductDetails';
 
-// --- ADMIN PAGES ---
-import AdminLayout from './layouts/AdminLayout';
-import AdminDashboard from './admin/AdminDashboard';
-import ProductList from './admin/products/ProductList';
-import AdminLogin from './admin/AdminLogin';
-import OrderList from './admin/orders/OrderList';
-import BestsellerList from './admin/bestsellers/BestsellerList';
+// --- ADMIN PAGES --
 import PoliciesPage from './pages/policies/PoliciesPage';
 
 // --- LAZY LOADED PAGES (Only for secondary pages) ---
@@ -126,20 +120,7 @@ function App() {
                 <Route path="/policies" element={<PoliciesPage />} />
               </Route>
 
-              {/* ADMIN ROUTES (No Navbar/Footer) */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-
-              <Route path="/admin" element={
-                <ProtectedAdminRoute>
-                  <AdminLayout />
-                </ProtectedAdminRoute>
-              }>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products" element={<ProductList />} />
-                <Route path="bestsellers" element={<BestsellerList />} />
-                <Route path="orders" element={<OrderList />} />
-              </Route>
-
+              
             </Routes>
           </CartProvider>
         </WishlistProvider>
