@@ -33,9 +33,8 @@ API.interceptors.response.use(
       localStorage.removeItem('alday_active_user');
       localStorage.removeItem('alday_auth_token');
       
+      // 🔥 FIX: Prevent infinite redirect loops
       const currentPath = window.location.pathname;
-
-      // Only redirect if the user is NOT already on the login page
       if (currentPath.startsWith('/admin')) {
          if (currentPath !== '/admin/login') {
              window.location.href = '/admin/login';
