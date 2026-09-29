@@ -7,7 +7,7 @@ import API from '../api/axiosInstance';
 import {
   Package, MapPin, User as UserIcon, LogOut, ChevronRight,
   Heart, CreditCard, Gift, Settings, Download, Edit3, Trash2, ShieldCheck, Bell, Check, Menu, X, Loader2
-} from 'lucide-react'; 
+} from 'lucide-react';
 
 //  SAFETY ARMOR: Protects React from crashing if the DB sends weird objects
 const safeText = (value, fallback = "") => {
@@ -27,7 +27,7 @@ const Account = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false); 
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // --- BACKEND STATES ---
   const [orders, setOrders] = useState([]);
@@ -67,8 +67,7 @@ const Account = () => {
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
         // Security: Only fetches THIS user's specific orders
-        const res = await API.get('/order/my', config);
-
+        const res = await API.get('/order/user', config);
         let rawOrders = [];
         if (res.data && Array.isArray(res.data.orders)) {
           rawOrders = res.data.orders;
@@ -219,11 +218,11 @@ const Account = () => {
             ) : (
               <div className="space-y-6">
                 {orders.map((order) => (
-                  <div key={order._id} className="bg-white border border-gray-200 rounded-sm shadow-sm p-6">
+                  <div key={order.orderId || order._id} className="bg-white border border-gray-200 rounded-sm shadow-sm p-6">
                     <div className="flex flex-wrap justify-between items-center border-b border-gray-100 pb-4 mb-4 gap-4">
                       <div>
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest">Order Number</p>
-                        <p className="font-bold"># {order.orderNumber || order._id.substring(0, 8).toUpperCase()}</p>
+                        <p className="font-bold"># {order.orderNumber || String(order.orderId || order._id).substring(0, 8).toUpperCase()}</p>
                       </div>
                       <div>
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest">Date Placed</p>
@@ -237,8 +236,8 @@ const Account = () => {
                       </div>
                       <div>
                         <span className={`text-[9px] font-bold uppercase px-3 py-1.5 rounded-sm tracking-widest ${order.status === 'DELIVERED' ? 'bg-green-50 text-green-700 border border-green-100' :
-                            order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-100' :
-                              'bg-yellow-50 text-yellow-700 border border-yellow-100'
+                          order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-100' :
+                            'bg-yellow-50 text-yellow-700 border border-yellow-100'
                           }`}>
                           {order.status || 'PROCESSING'}
                         </span>
@@ -473,8 +472,8 @@ const Account = () => {
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                         required
                         className={`w-full border rounded-sm py-3.5 px-4 text-sm focus:border-black outline-none bg-[#FBFBFB] focus:bg-white transition-colors ${passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
-                            ? 'border-red-300 focus:border-red-500'
-                            : 'border-gray-300'
+                          ? 'border-red-300 focus:border-red-500'
+                          : 'border-gray-300'
                           }`}
                       />
                       {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
@@ -569,8 +568,8 @@ const Account = () => {
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id); setIsMobileNavOpen(false); }}
                   className={`w-full flex items-center p-4 px-6 text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id
-                      ? 'bg-[#FBFBFB] text-[#C5A059] border-l-2 border-l-[#C5A059]'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-black border-l-2 border-transparent'
+                    ? 'bg-[#FBFBFB] text-[#C5A059] border-l-2 border-l-[#C5A059]'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-black border-l-2 border-transparent'
                     }`}
                 >
                   <span className="flex items-center gap-3">{tab.icon} {tab.label}</span>
@@ -597,8 +596,8 @@ const Account = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center justify-between p-4 px-6 border-b border-gray-100 text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id
-                    ? 'bg-[#FBFBFB] text-[#C5A059] border-l-2 border-l-[#C5A059]'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-black border-l-2 border-transparent'
+                  ? 'bg-[#FBFBFB] text-[#C5A059] border-l-2 border-l-[#C5A059]'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-black border-l-2 border-transparent'
                   }`}
               >
                 <span className="flex items-center gap-3">{tab.icon} {tab.label}</span>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // ✅ 1. Import the centralized auth service
-import authService from '../api/authService'; 
+import authService from '../api/authService';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ const AdminLogin = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(''); 
+    setError('');
     setIsLoading(true);
 
     try {
@@ -25,7 +25,7 @@ const AdminLogin = () => {
       const { token, user } = data;
 
       // --- THE CRITICAL FIX: Verify Admin Role ---
-      if (user && user.role !== 'admin') {
+      if (user && user.role !== 'ROLE_ADMIN' && user.role !== 'admin') {
         setError("Access Denied: This account does not have administrator privileges.");
         setIsLoading(false);
         return; // Stop the login process
@@ -33,7 +33,7 @@ const AdminLogin = () => {
 
       // Store the secure token in localStorage
       localStorage.setItem('adminToken', token);
-      
+
       // Store admin info if needed for the header
       if (user) {
         localStorage.setItem('adminUser', JSON.stringify(user));
@@ -41,7 +41,7 @@ const AdminLogin = () => {
 
       // Redirect to the Dashboard
       navigate('/admin');
-      
+
     } catch (err) {
       console.error("Login Error:", err);
       if (err.response && err.response.data && err.response.data.message) {
@@ -71,10 +71,10 @@ const AdminLogin = () => {
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
-              value={email} 
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none transition-colors"
               placeholder="admin@alday.com"
@@ -82,21 +82,20 @@ const AdminLogin = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
-              value={password} 
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none transition-colors"
               placeholder="••••••••"
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isLoading}
-            className={`w-full py-2.5 rounded-lg text-white font-medium transition-all ${
-              isLoading ? 'bg-slate-700 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'
-            }`}
+            className={`w-full py-2.5 rounded-lg text-white font-medium transition-all ${isLoading ? 'bg-slate-700 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'
+              }`}
           >
             {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
           </button>

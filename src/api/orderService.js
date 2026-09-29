@@ -3,8 +3,8 @@ import API from './axiosInstance';
 const orderService = {
   // 📦 Get all orders for the admin dashboard
   getAllOrders: async (queryString = '') => {
-    // Added the leading '/' to ensure it appends correctly to your baseURL
-    const response = await API.get(`/admin/order${queryString}`); 
+    // Point this to your standard order controller route
+    const response = await API.get(`/order/all${queryString}`); 
     return response.data;
   },
 
@@ -16,9 +16,9 @@ const orderService = {
   },
   
   // 🔍 Get a single order's details
+  // 🔍 Get a single order's details
   getOrderById: async (id) => {
-    // Changed from /order to /admin/order
-    const response = await API.get(`/admin/order/${id}`);
+    const response = await API.get(`/order/${id}`);
     return response.data;
   }
 };

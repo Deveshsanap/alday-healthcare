@@ -310,7 +310,7 @@ const ShopPage = () => {
                          </button>
                       </div>
 
-                      <Link to={`/product/${productId}`} className="block h-full">
+                      <Link to={`/product/prod-${productId}`} className="block h-full">
                         <img 
                           src={product.image || product.imageUrl || "https://via.placeholder.com/300"} 
                           alt={product.name} 
